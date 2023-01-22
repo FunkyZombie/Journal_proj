@@ -1,0 +1,17 @@
+{
+    "name": "project/journal",
+    "autoload": {
+        "psr-4": {
+            "Journal\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "FunkyZombie",
+            "email": "apotheosis.catarsis@gmail.com"
+        }
+    ],
+    "require": {
+        "fakerphp/faker": "^1.21"
+    }
+}
