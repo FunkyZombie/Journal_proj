@@ -1,24 +1,47 @@
 <?php 
 
-require_once 'vendor/autoload.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
-use Journal\Articles\Comment as Comment;
-use Journal\Articles\Article as Article;
-use Journal\Users\User as User;
+use Journal\Blog\Commands\{
+    CreateUserCommand, 
+    Arguments
+};
 
-$faker = Faker\Factory::create();
+use Journal\Blog\Exceptions\{
+    UserNotFoundException, 
+    AppException
+};
 
-if ($argv[1] === 'user') {
-    $user = new User($faker->ean13(), $faker->firstName(), $faker->lastName());
-    echo $user->__toString() . "\n";
-}
+use Journal\Blog\{
+    User, 
+    Name, 
+    Post, 
+    UUID,
+    Comment
+};
 
-if ($argv[1] === 'post') {
-    $article = new Article($faker->text(30), $faker->text(200));
-    echo $article->__toString() . "\n";
-}
+use Journal\MasterRepository as MasterRepository;
 
-if ($argv[1] === 'comment') {
-    $comment = new Comment($faker->text(200));
-    echo $comment->__toString() . "\n";
-}
+$master = new MasterRepository('sqlite:' . __DIR__ . '/blog.sqlite');
+
+$command = new CreateUserCommand($user = $master->userRepo());
+
+$user = $master->userRepo()->get(new UUID('5b1da8ae-9a21-45c2-9dcc-52189a966979'));
+// $post = new Post(UUID::random(), $user->uuid(), 'Заголовок статьи', 'Текст статьи');
+$post = $master->postRepo()->get(new UUID('8e368fdb-c8b8-46f7-bb30-f2e59d3e1ff1'));
+
+$comment = new Comment(UUID::random(), $user->uuid(), $post->uuid(), 'Еще один рандомный комментарий');
+
+$commentOnPost = $master->commentRepo()->getAllCommentsOnPost(new UUID('8e368fdb-c8b8-46f7-bb30-f2e59d3e1ff1'));
+
+$posts = $master->postRepo()->getAllPost();
+
+echo "<pre>";
+var_dump($post);
+echo "</pre>";
+
+// try {
+//     $command->handler(Arguments::fromArgv($argv));
+// } catch (AppException $e) {
+//     print $e->getMessage();
+// }
