@@ -3,6 +3,7 @@
 namespace Journal\Blog\Repositories\PostRepository;
 
 use Journal\Blog\{Comment, UUID};
+use Journal\Blog\Exceptions\CommentNotFoundException;
 use PDO;
 use PDOStatement;
 class SqliteCommentsRepository implements CommentRepositoryInterface
@@ -30,20 +31,23 @@ class SqliteCommentsRepository implements CommentRepositoryInterface
         $statement = $this->connection->prepare(
             'SELECT * FROM comments WHERE post_uuid = :post_uuid'
         );
+        
         $statement->execute([
             ':post_uuid' => $post_uuid
         ]);
+        
         return $this->getComment($statement, $post_uuid);
     }
+    
     private function getComment(PDOStatement $statement, string $uuid):Comment
     {
         $result = $statement->fetch(PDO::FETCH_ASSOC);
 
-        // if (false === $result) {
-        //     throw new UserNotFoundException(
-        //         "Cannot find user: $username"
-        //     );
-        // }
+        if (false === $result) {
+            throw new CommentNotFoundException(
+                "Comment not found"
+            );
+        }
         
         return new Comment(
             new UUID($result['uuid']),
@@ -65,12 +69,12 @@ class SqliteCommentsRepository implements CommentRepositoryInterface
             ':post_uuid' => $post_uuid
         ]);
 
-        while ($row = $statement->fetchObject()) {
+        while ($row = $statement->fetch(PDO::FETCH_ASSOC)) {
             $result[] = new Comment(
-                new UUID($row->uuid),
-                new UUID($row->author_uuid),
-                new UUID($row->post_uuid),
-                $row->text
+                new UUID($row['uuid']),
+                new UUID($row['author_uuid']),
+                new UUID($row['post_uuid']),
+                $row['text']
             );
         }
 

@@ -3,6 +3,7 @@
 namespace Journal\Blog\Repositories\PostRepository;
 
 use Journal\Blog\{Post, UUID, Comment};
+use Journal\Blog\Exceptions\PostNotFoundException;
 use PDO;
 use PDOStatement;
 
@@ -35,17 +36,16 @@ class SqlitePostsRepository implements PostRepositoryInterface
             ':uuid' => $uuid
         ]);
 
-        return $this->getPost($statement, $uuid);
+        return $this->getPost($statement);
     }
-    private function getPost(PDOStatement $statement, string $uuid): Post
+
+    private function getPost(PDOStatement $statement): Post
     {
         $result = $statement->fetch(PDO::FETCH_ASSOC);
-
-        // if (false === $result) {
-        //     throw new UserNotFoundException(
-        //         "Cannot find user: $username"
-        //     );
-        // }
+    
+        if ($result === false) {
+            throw new PostNotFoundException('Post not found');
+        }
 
         return new Post(
             new UUID($result['uuid']),
@@ -53,26 +53,5 @@ class SqlitePostsRepository implements PostRepositoryInterface
             $result['title'],
             $result['text']
         );
-    }
-    public function getAllPost(): array
-    {
-        $result = [];
-
-        $statement = $this->connection->prepare(
-            'SELECT * FROM posts'
-        );
-
-        $statement->execute([]);
-
-        while ($row = $statement->fetchObject()) {
-            $result[] = new Post(
-                new UUID($row->uuid),
-                new UUID($row->author_uuid),
-                $row->title,
-                $row->text
-            );
-        }
-
-        return $result ?: null;
     }
 }

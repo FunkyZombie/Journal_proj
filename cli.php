@@ -34,8 +34,6 @@ $comment = new Comment(UUID::random(), $user->uuid(), $post->uuid(), 'Еще о�
 
 $commentOnPost = $master->commentRepo()->getAllCommentsOnPost(new UUID('8e368fdb-c8b8-46f7-bb30-f2e59d3e1ff1'));
 
-$posts = $master->postRepo()->getAllPost();
-
 echo "<pre>";
 var_dump($post);
 echo "</pre>";

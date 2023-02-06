@@ -1,7 +1,3 @@
 <?php 
 
-    include 'cli.php';
-
-
-
-
+include 'cli.php';
