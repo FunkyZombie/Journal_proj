@@ -2,26 +2,28 @@
 
 namespace Journal\Blog\Repositories\PostRepository;
 
-use Journal\Blog\{Post, UUID, Comment};
+use Journal\Blog\{Post, UUID};
 use Journal\Blog\Exceptions\PostNotFoundException;
+use Journal\Blog\Repositories\UserRepository\SqliteUsersRepository;
 use PDO;
 use PDOStatement;
 
 class SqlitePostsRepository implements PostRepositoryInterface
 {
     public function __construct(
-        private PDO $connection
+        private PDO $connection,
+        private SqliteUsersRepository $userRepository
     ) {}
     public function save(Post $post): void
     {
         $statement = $this->connection->prepare(
-            'INSERT INTO posts (uuid, author_uuid, title, text)
-            VALUES (:uuid, :author_uuid, :title, :text)'
+            'INSERT INTO posts (uuid, author, title, text)
+            VALUES (:uuid, :author, :title, :text)'
         );
 
         $statement->execute([
             ':uuid' => (string)$post->uuid(),
-            ':author_uuid' => (string)$post->authorUUID(),
+            ':author' => (string)$post->author()->uuid(),
             ':title' => (string)$post->title(),
             ':text' => $post->text()
         ]);
@@ -47,11 +49,24 @@ class SqlitePostsRepository implements PostRepositoryInterface
             throw new PostNotFoundException('Post not found');
         }
 
+        $user = $this->userRepository->get(new UUID($result['author']));
+
         return new Post(
             new UUID($result['uuid']),
-            new UUID($result['author_uuid']),
+            $user,
             $result['title'],
             $result['text']
         );
+    }
+    
+    public function delete(UUID $uuid):void
+    {
+        $statement = $this->connection->prepare(
+            'DELETE FROM posts WHERE posts.uuid=:uuid;'
+        );
+        
+        $statement->execute([
+            ':uuid' => $uuid,
+        ]);
     }
 }
