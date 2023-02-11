@@ -1,10 +1,8 @@
 <?php
 
 use Journal\Blog\Exceptions\HttpException;
-use Journal\Blog\Repositories\PostRepository\SqliteCommentsRepository;
-use Journal\Blog\Repositories\PostRepository\SqlitePostsRepository;
-use Journal\Blog\Repositories\UserRepository\SqliteUsersRepository;
 use Journal\Http\Actions\Comments\CreateComment;
+use Journal\Http\Actions\Like\CreateLike;
 use Journal\Http\Actions\Posts\CreatePost;
 use Journal\Http\Actions\Posts\DeletePost;
 use Journal\Http\Actions\Posts\FindByUuid;
@@ -14,12 +12,14 @@ use Journal\Http\ErrorResponse;
 use Journal\Http\Request;
 
 require_once __DIR__ . '/vendor/autoload.php';
+$container = require __DIR__ . '/bootstrap.php';
 
 $request = new Request(
     $_GET,
     $_SERVER,
     file_get_contents('php://input'),
 );
+
 try {
     $path = $request->path();
 } catch (HttpException) {
@@ -36,61 +36,18 @@ try {
 
 $routes = [
     'GET' => [
-        '/users/show' => new FindByUsername(
-            new SqliteUsersRepository(
-                new PDO('sqlite:' . __DIR__ . '/blog.sqlite')
-            )
-        ),
-        '/posts/show' => new FindByUuid(
-            new SqlitePostsRepository(
-                new PDO('sqlite:' . __DIR__ . '/blog.sqlite'),
-                new SqliteUsersRepository(
-                    new PDO('sqlite:' . __DIR__ . '/blog.sqlite')
-                )
-            )
-        ),
+        '/users/show' => FindByUsername::class,
+        '/posts/show' => FindByUuid::class
     ],
     'POST' => [
-        '/posts/create' => new CreatePost(
-            new SqlitePostsRepository(
-                new PDO('sqlite:' . __DIR__ . '/blog.sqlite'),
-                new SqliteUsersRepository(
-                    new PDO('sqlite:' . __DIR__ . '/blog.sqlite')
-                )
-            ),
-            new SqliteUsersRepository(
-                new PDO('sqlite:' . __DIR__ . '/blog.sqlite')
-            )
-        ),
-        '/posts/comment' => new CreateComment(
-            new SqlitePostsRepository(
-                new PDO('sqlite:' . __DIR__ . '/blog.sqlite'),
-                new SqliteUsersRepository(
-                    new PDO('sqlite:' . __DIR__ . '/blog.sqlite')
-                )
-            ),
-            new SqliteUsersRepository(
-                new PDO('sqlite:' . __DIR__ . '/blog.sqlite')
-            ),
-            new SqliteCommentsRepository(
-                new PDO('sqlite:' . __DIR__ . '/blog.sqlite')
-            ),
-        ),
-        '/users/create' => new CreateUser(
-            new SqliteUsersRepository(
-                new PDO('sqlite:' . __DIR__ . '/blog.sqlite')
-            )
-        ),
+        '/posts/create' => CreatePost::class,
+        '/posts/comment' => CreateComment::class,
+        '/posts/like' => CreateLike::class,
+        '/users/create' => CreateUser::class,
+        
     ],
     'DELETE' => [
-        '/posts' => new DeletePost(
-            new SqlitePostsRepository(
-                new PDO('sqlite:' . __DIR__ . '/blog.sqlite'),
-                new SqliteUsersRepository(
-                    new PDO('sqlite:' . __DIR__ . '/blog.sqlite')
-                )
-            ),
-        ),
+        '/posts' => DeletePost::class,
     ],
 ];
 
@@ -104,11 +61,13 @@ if (!array_key_exists($path, $routes[$method])) {
     return;
 }
 
-$action = $routes[$method][$path];
+$actionClassName = $routes[$method][$path];
+$action = $container->get($actionClassName);
 
 try {
     $response = $action->handle($request);
-    $response->send();
 } catch (Exception $e) {
     (new ErrorResponse($e->getMessage()))->send();
 }
+
+$response->send();

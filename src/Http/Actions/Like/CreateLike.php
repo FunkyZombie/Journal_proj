@@ -1,16 +1,16 @@
 <?php
 
-namespace Journal\Http\Actions\Comments;
+namespace Journal\Http\Actions\Like;
 
 use Journal\Blog\Exceptions\HttpException;
 use Journal\Blog\Exceptions\InvalidArgumentException;
 use Journal\Blog\Exceptions\PostNotFoundException;
 use Journal\Blog\Exceptions\UserNotFoundException;
 
-use Journal\Blog\Repositories\PostRepository\CommentRepositoryInterface;
+use Journal\Blog\Like;
 use Journal\Blog\UUID;
-use Journal\Blog\Comment;
 
+use Journal\Blog\Repositories\LikeRepository\LikeRepositoryInterface;
 use Journal\Blog\Repositories\PostRepository\PostRepositoryInterface;
 use Journal\Blog\Repositories\UserRepository\UserRepositoryInterface;
 
@@ -21,19 +21,17 @@ use Journal\Http\Request;
 use Journal\Http\Response;
 use Journal\Http\SuccessfulResponse;
 
-class CreateComment implements ActionInterface
+class CreateLike implements ActionInterface
 {
     public function __construct(
         private PostRepositoryInterface $postsRepository,
         private UserRepositoryInterface $usersRepository,
-        private CommentRepositoryInterface $commentsRepository
-    )
-    {
-    }
+        private LikeRepositoryInterface $likeRepository
+    ) {}
     public function handle(Request $request): Response
     {
         try {
-            $authorUuid = new UUID($request->jsonBodyField('author_uuid'));
+            $userUuid = new UUID($request->jsonBodyField('user_uuid'));
             $postUuid = new UUID($request->jsonBodyField('post_uuid'));
         } catch (HttpException | InvalidArgumentException $e) {
             return new ErrorResponse($e->getMessage());
@@ -46,27 +44,31 @@ class CreateComment implements ActionInterface
         }
         
         try {
-            $this->usersRepository->get($authorUuid);
+            $this->usersRepository->get($userUuid);
         } catch (UserNotFoundException $e) {
             return new ErrorResponse($e->getMessage());
         }
-        
-        $newCommentUuid = UUID::random();
-        
-        try {
-            $comment = new Comment(
-                $newCommentUuid,
-                $authorUuid,
-                $postUuid,
-                $request->jsonBodyField('text'),
-            );
-        } catch (HttpException $e) {
-            return new ErrorResponse($e->getMessage());
-        }
-        $this->commentsRepository->save($comment);
 
+    
+        if ($this->likeRepository->has($postUuid, $userUuid)) {
+            $newLikeUuid = UUID::random();
+            $like = new Like(
+                $newLikeUuid,
+                $postUuid,
+                $userUuid,
+            );
+            
+            $this->likeRepository->save($like);
+            
+            return new SuccessfulResponse([
+                'uuid' => (string) $newLikeUuid,
+            ]);
+        }
+        
         return new SuccessfulResponse([
-            'uuid' => (string) $newCommentUuid,
+            'forbidden' => 'Action not available',
         ]);
     }
+    
+    
 }

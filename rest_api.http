@@ -1,7 +1,6 @@
-POST http://localhost:8000/posts/comment
+POST http://localhost:8000/posts/like
 
 {
-    "author_uuid": "146e3a28-04f4-4a46-b222-3e2b4103d0c7",
     "post_uuid": "f398a272-ad43-449c-96a0-beb3180efa66",
-    "text": "New Comment"
+    "user_uuid": "146e3a28-04f4-4a46-b222-3e2b4103d0c7"
 }
