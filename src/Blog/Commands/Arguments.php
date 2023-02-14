@@ -2,7 +2,7 @@
 
 namespace Journal\Blog\Commands;
 
-use InvalidArgumentException;
+use Journal\Blog\Exceptions\InvalidArgumentException;
 
 final class Arguments
 {

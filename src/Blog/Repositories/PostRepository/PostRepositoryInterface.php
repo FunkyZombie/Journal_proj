@@ -8,5 +8,5 @@ use Journal\Blog\UUID;
 interface PostRepositoryInterface 
 {
     public function save(Post $post): void;
-    // public function get(UUID $uuid): Post;
+    public function get(UUID $uuid): Post;
 }
