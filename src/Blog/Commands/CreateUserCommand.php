@@ -10,26 +10,36 @@ use Journal\Blog\Exceptions\CommandException;
 use Journal\Blog\User as User;
 use Journal\Blog\Name as Name;
 use Journal\Blog\UUID as UUID;
+use Psr\Log\LoggerInterface;
 
 class CreateUserCommand
 {
     public function __construct(
-        private UserRepositoryInterface $usersRepository
+        private UserRepositoryInterface $usersRepository,
+        private LoggerInterface $logger
     ){}
 
     public function handler(Arguments $arguments): void
     {
+        $this->logger->info('Create user commant started');
+        
         $username = $arguments->get('username');
 
         if ($this->userExists($username)) {
-            throw new CommandException("User already exists: $username");
+            $this->logger->warning("User already exists: $username");
         }
+        
+        $uuid = UUID::random();
 
         $this->usersRepository->save(new User(
-            UUID::random(),
-            $username,
-            new Name($arguments->get('first_name'), $arguments->get('last_name'))
+            uuid: $uuid,
+            username: $username,
+            name: new Name(
+                first_name: $arguments->get('first_name'), 
+                last_name: $arguments->get('last_name'))
         ));
+        
+        $this->logger->info("User created: $uuid");
     }
 
     private function userExists(string $username): bool

@@ -1,5 +1,6 @@
 <?php
 
+use Journal\Blog\UnitTests\DummyLogger;
 use Journal\Blog\Commands\Arguments;
 use Journal\Blog\Commands\CreateUserCommand;
 use Journal\Blog\Exceptions\InvalidArgumentException;
@@ -31,7 +32,7 @@ class CreateUserCommandTest extends TestCase
     public function testItRequiresFirstName(): void
     {
         // Вызываем ту же функцию
-        $command = new CreateUserCommand($this->makeUsersRepository());
+        $command = new CreateUserCommand($this->makeUsersRepository(), new DummyLogger());
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('No such argument: first_name');
         $command->handler(new Arguments([
@@ -44,7 +45,7 @@ class CreateUserCommandTest extends TestCase
     public function testItRequiresLastName(): void
     {
         // Вызываем ту же функцию
-        $command = new CreateUserCommand($this->makeUsersRepository());
+        $command = new CreateUserCommand($this->makeUsersRepository(), new DummyLogger());
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('No such argument: last_name');
         $command->handler(new Arguments([

@@ -7,7 +7,7 @@ use Journal\Blog\UUID;
 
 use PHPUnit\Framework\TestCase;
 
-class SqliteCommentRepositoryTest extends TestCase
+class SqliteCommentTest extends TestCase
 {
     public function testItThrowAnExceptionWhenCommentNotFound(): void
     {
