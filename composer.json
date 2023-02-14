@@ -21,6 +21,7 @@
         "roave/security-advisories": "dev-latest"
     },
     "scripts": {
-        "test": "phpunit tests --testdox --colors"
+        "test": "phpunit tests --testdox --colors",
+        "test-stderr": "phpunit tests --testdox --colors --stderr"
     }
 }

@@ -20,23 +20,36 @@ use Journal\Blog\{
     Comment
 };
 
-use Journal\MasterRepository as MasterRepository;
+use Journal\Blog\Repositories\PostRepository\SqliteCommentsRepository;
+use Journal\Blog\Repositories\PostRepository\SqlitePostsRepository;
+use Journal\Blog\Repositories\UserRepository\SqliteUsersRepository;
 
-$master = new MasterRepository('sqlite:' . __DIR__ . '/blog.sqlite');
+$DIR = 'sqlite:' . __DIR__ . '/blog.sqlite';
 
-$command = new CreateUserCommand($user = $master->userRepo());
+$userRepository = new SqliteUsersRepository(new PDO($DIR));
+$postRepository = new SqlitePostsRepository(new PDO($DIR), $userRepository);
+$commentRepository = new SqliteCommentsRepository(new PDO($DIR));
 
-$user = $master->userRepo()->get(new UUID('5b1da8ae-9a21-45c2-9dcc-52189a966979'));
-// $post = new Post(UUID::random(), $user->uuid(), 'Заголовок статьи', 'Текст статьи');
-$post = $master->postRepo()->get(new UUID('8e368fdb-c8b8-46f7-bb30-f2e59d3e1ff1'));
+$command = new CreateUserCommand($userRepository);
 
-$comment = new Comment(UUID::random(), $user->uuid(), $post->uuid(), 'Еще один рандомный комментарий');
+// $user = $master->userRepo()->save(
+//     new User(UUID::random(),
+//         'FunkyMonk',
+//         new Name('Anatoliy', 'Shilin')
+//     )
+// );
 
-$commentOnPost = $master->commentRepo()->getAllCommentsOnPost(new UUID('8e368fdb-c8b8-46f7-bb30-f2e59d3e1ff1'));
+$user = $userRepository->get(new UUID('146e3a28-04f4-4a46-b222-3e2b4103d0c7'));
 
-echo "<pre>";
-var_dump($post);
-echo "</pre>";
+// $post = new Post(UUID::random(), $user, 'Заголовок статьи', 'Текст статьи');
+
+// $master->postRepo()->save($post);
+
+$getPost = $postRepository->get(new UUID('f0adf792-11c8-4d1d-a240-c64476826a16'));
+
+echo '<pre>';
+print_r($getPost);
+echo '</pre>';
 
 // try {
 //     $command->handler(Arguments::fromArgv($argv));
