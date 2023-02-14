@@ -20,7 +20,7 @@ $connection->query(
         uuid
         TEXT NOT NULL
         CONSTRAINT uuid_primary_key PRIMARY KEY,
-        author_uuid
+        author
         TEXT NOT NULL
         CONSTRAINT author_unique_key,
         title TEXT NOT NULL,

@@ -2,25 +2,28 @@
 
 namespace Journal\Blog\Repositories\PostRepository;
 
-use Journal\Blog\{Post, UUID, Comment};
+use Journal\Blog\{Post, UUID};
+use Journal\Blog\Exceptions\PostNotFoundException;
+use Journal\Blog\Repositories\UserRepository\SqliteUsersRepository;
 use PDO;
 use PDOStatement;
 
 class SqlitePostsRepository implements PostRepositoryInterface
 {
     public function __construct(
-        private PDO $connection
+        private PDO $connection,
+        private SqliteUsersRepository $userRepository
     ) {}
     public function save(Post $post): void
     {
         $statement = $this->connection->prepare(
-            'INSERT INTO posts (uuid, author_uuid, title, text)
-            VALUES (:uuid, :author_uuid, :title, :text)'
+            'INSERT INTO posts (uuid, author, title, text)
+            VALUES (:uuid, :author, :title, :text)'
         );
 
         $statement->execute([
             ':uuid' => (string)$post->uuid(),
-            ':author_uuid' => (string)$post->authorUUID(),
+            ':author' => (string)$post->author()->uuid(),
             ':title' => (string)$post->title(),
             ':text' => $post->text()
         ]);
@@ -35,44 +38,35 @@ class SqlitePostsRepository implements PostRepositoryInterface
             ':uuid' => $uuid
         ]);
 
-        return $this->getPost($statement, $uuid);
+        return $this->getPost($statement);
     }
-    private function getPost(PDOStatement $statement, string $uuid): Post
+
+    private function getPost(PDOStatement $statement): Post
     {
         $result = $statement->fetch(PDO::FETCH_ASSOC);
+    
+        if ($result === false) {
+            throw new PostNotFoundException('Post not found');
+        }
 
-        // if (false === $result) {
-        //     throw new UserNotFoundException(
-        //         "Cannot find user: $username"
-        //     );
-        // }
+        $user = $this->userRepository->get(new UUID($result['author']));
 
         return new Post(
             new UUID($result['uuid']),
-            new UUID($result['author_uuid']),
+            $user,
             $result['title'],
             $result['text']
         );
     }
-    public function getAllPost(): array
+    
+    public function delete(UUID $uuid):void
     {
-        $result = [];
-
         $statement = $this->connection->prepare(
-            'SELECT * FROM posts'
+            'DELETE FROM posts WHERE posts.uuid=:uuid;'
         );
-
-        $statement->execute([]);
-
-        while ($row = $statement->fetchObject()) {
-            $result[] = new Post(
-                new UUID($row->uuid),
-                new UUID($row->author_uuid),
-                $row->title,
-                $row->text
-            );
-        }
-
-        return $result ?: null;
+        
+        $statement->execute([
+            ':uuid' => $uuid,
+        ]);
     }
 }

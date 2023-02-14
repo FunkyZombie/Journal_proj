@@ -35,7 +35,6 @@ class CreateUserCommand
     private function userExists(string $username): bool
     {
         try {
-            // Пытаемся получить пользователя из репозитория
             $this->usersRepository->getByUsername($username);
         } catch (UserNotFoundException) {
             return false;
