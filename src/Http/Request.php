@@ -31,8 +31,8 @@ class Request
                 associative: true,
                 flags: JSON_THROW_ON_ERROR
             );
-        } catch (JsonException) {
-            throw new HttpException("Cannot decode json body");
+        } catch (JsonException $e) {
+            throw new HttpException("Cannot decode json body: " . $e->getMessage());
         }
         if (!is_array($data)) {
             throw new HttpException("Not an array/object in json body");

@@ -1,6 +1,1 @@
-POST http://localhost:8000/posts/like
-
-{
-    "post_uuid": "f398a272-ad43-449c-96a0-beb3180efa66",
-    "user_uuid": "146e3a28-04f4-4a46-b222-3e2b4103d0c7"
-}
+GET http://localhost:8000/posts/show?uuid=fb3b5788-f882-4dc4-b020-d88603b8dbc0

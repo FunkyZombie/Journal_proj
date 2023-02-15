@@ -13,11 +13,13 @@ use Journal\Http\ErrorResponse;
 use Journal\Http\Request;
 use Journal\Http\Response;
 use Journal\Http\SuccessfulResponse;
+use Psr\Log\LoggerInterface;
 
 class DeletePost implements ActionInterface
 {
     public function __construct(
-        private PostRepositoryInterface $postsRepository    
+        private PostRepositoryInterface $postsRepository,
+        private LoggerInterface $logger
     )
     {
     }
@@ -32,8 +34,9 @@ class DeletePost implements ActionInterface
         
         $this->postsRepository->delete($postUuid);
        
+        $this->logger->info("Post deleted: $postUuid");
+        
         return new SuccessfulResponse([
-            'delete' => true,
             'uuid' => (string) $postUuid,
         ]);
     }
