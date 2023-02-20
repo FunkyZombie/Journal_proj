@@ -16,6 +16,8 @@ use Journal\Blog\Repositories\UserRepository\UserRepositoryInterface;
 
 use Journal\Http\Actions\ActionInterface;
 
+use Journal\Http\Auth\AuthException;
+use Journal\Http\Auth\TokenAuthenticationInterface;
 use Journal\Http\ErrorResponse;
 use Journal\Http\Request;
 use Journal\Http\Response;
@@ -28,6 +30,7 @@ class CreateLike implements ActionInterface
         private PostRepositoryInterface $postsRepository,
         private UserRepositoryInterface $usersRepository,
         private LikeRepositoryInterface $likeRepository,
+        private TokenAuthenticationInterface $authentication,
         private LoggerInterface $logger
     )
     {
@@ -35,17 +38,21 @@ class CreateLike implements ActionInterface
     public function handle(Request $request): Response
     {
         try {
-            $userUuid = new UUID($request->jsonBodyField('user_uuid'));
+            $user = $this->authentication->user($request);
             $postUuid = new UUID($request->jsonBodyField('post_uuid'));
         } catch (HttpException | InvalidArgumentException $e) {
             $this->logger->warning($e->getMessage());
             return new ErrorResponse($e->getMessage());
         }
+        
         try {
             $this->postsRepository->get($postUuid);
         } catch (PostNotFoundException $e) {
             return new ErrorResponse($e->getMessage());
         }
+        
+        $userUuid = new UUID($user->uuid());
+        
         try {
             $this->usersRepository->get($userUuid);
         } catch (UserNotFoundException $e) {

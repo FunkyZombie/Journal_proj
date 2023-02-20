@@ -27,12 +27,11 @@ class CreateUser implements ActionInterface
 
     public function handle(Request $request): Response
     {
-        $newUserUuid = UUID::random();
         $username = $request->jsonBodyField('username');
         try {
-            $user = new User(
-                $newUserUuid,
+            $user = User::createFrom(
                 $username,
+                $request->jsonBodyField('password'),
                 new Name(
                     $request->jsonBodyField('first_name'),
                     $request->jsonBodyField('last_name'),
@@ -45,10 +44,10 @@ class CreateUser implements ActionInterface
 
         $this->usersRepository->save($user);
 
-        $this->logger->info('Create user: ' . $username . " (id: $newUserUuid)");
+        $this->logger->info('Create user: ' . $username . " (id: {$user->uuid()}");
         
         return new SuccessfulResponse([
-            'uuid' => (string) $newUserUuid,
+            'uuid' => (string) $user->uuid(),
         ]);
     }
 }

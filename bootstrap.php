@@ -2,18 +2,29 @@
 
 use Journal\Blog\Commands\CreateUserCommand;
 use Journal\Blog\Container\DIContainer;
+use Journal\Blog\Repositories\AuthTokenRepository\AuthTokensRepositoryInterface;
+use Journal\Blog\Repositories\AuthTokenRepository\SqliteAuthTokensRepository;
 use Journal\Blog\Repositories\LikeRepository\LikeRepositoryInterface;
 use Journal\Blog\Repositories\LikeRepository\SqliteLikeRepository;
+
 use Journal\Blog\Repositories\PostRepository\CommentRepositoryInterface;
 use Journal\Blog\Repositories\PostRepository\PostRepositoryInterface;
 use Journal\Blog\Repositories\PostRepository\SqliteCommentsRepository;
 use Journal\Blog\Repositories\PostRepository\SqlitePostsRepository;
+
 use Journal\Blog\Repositories\UserRepository\SqliteUsersRepository;
 use Journal\Blog\Repositories\UserRepository\UserRepositoryInterface;
+
+use Journal\Http\Auth\BearerTokenAuthentication;
 use Journal\Http\Auth\IdentificationInterface;
 use Journal\Http\Auth\JsonBodyUuidIdentification;
+use Journal\Http\Auth\PasswordAuthentication;
+use Journal\Http\Auth\PasswordAuthenticationInterface;
+use Journal\Http\Auth\TokenAuthenticationInterface;
+
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
+
 use Psr\Log\LoggerInterface;
 
 require_once __DIR__ . '/vendor/autoload.php';
@@ -75,10 +86,27 @@ $container->bind(
     LikeRepositoryInterface::class,
     SqliteLikeRepository::class
 );
+// PasswordAuthentication
+$container->bind(
+    PasswordAuthenticationInterface::class,
+    PasswordAuthentication::class
+);
+// Token
+$container->bind(
+    AuthTokensRepositoryInterface::class,
+    SqliteAuthTokensRepository::class
+);
+
+$container->bind(
+    TokenAuthenticationInterface::class,
+    BearerTokenAuthentication::class
+);
+
 $container->bind(
     'CreateUserCommand',
     CreateUserCommand::class
 );
+
 $container->bind(
     IdentificationInterface::class,
     JsonBodyUuidIdentification::class

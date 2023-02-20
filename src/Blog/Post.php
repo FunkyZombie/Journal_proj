@@ -12,11 +12,11 @@ class Post {
     {}
     public function __toString(): string
     {
-        return $this->author . ': ' . $this->title . ' >>> ' . $this->text;
+        return (string) $this->uuid;
     }
-    public function uuid(): UUID
+    public function uuid(): string
     {
-        return $this->uuid;
+        return (string) $this->uuid;
     }
     public function author():User
     {

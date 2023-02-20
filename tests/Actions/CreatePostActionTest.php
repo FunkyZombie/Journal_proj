@@ -12,8 +12,7 @@ use Journal\Blog\UnitTests\DummyLogger;
 use Journal\Blog\User;
 use Journal\Blog\UUID;
 use Journal\Http\Actions\Posts\CreatePost;
-use Journal\Http\Auth\AuthException;
-use Journal\Http\Auth\IdentificationInterface;
+use Journal\Http\Auth\TokenAuthenticationInterface;
 use Journal\Http\ErrorResponse;
 use Journal\Http\Request;
 
@@ -73,7 +72,7 @@ class CreatePostActionTest extends TestCase
 
             public function getByUsername(string $username): User
             {
-                throw new UserNotFoundException('Not found');
+                throw new UserNotFoundException("Not found: $username");
             }
         };
     }
@@ -86,6 +85,7 @@ class CreatePostActionTest extends TestCase
             new User(
                 new UUID('146e3a28-04f4-4a46-b222-3e2b4103d0c7'),
                 'username',
+                'qwerty123',
                 new Name('name', 'surname')
             )
         ]);
@@ -117,7 +117,7 @@ class CreatePostActionTest extends TestCase
 
     public function testItReturnsErrorResponseIfNotFoundUser(): void
     {
-        $request = new Request([], [], '{"author":"146e3a28-04f4-4a46-b222-3e2b4108d0c7","title":"title","text":"text"}');
+        $request = new Request([], [], '{"author":"146e3a28-04f4-4a46-b222-3e2b4108d0c7", "password":"qwerty123","title":"title","text":"text"}');
 
         $postRepository = $this->postsRepository();
         $usersRepository = $this->usersRepository([]);
@@ -142,6 +142,7 @@ class CreatePostActionTest extends TestCase
             new User(
                 new UUID('146e3a28-04f4-4a46-b222-3e2b4103d0c7'),
                 'username',
+                'qwerty123',
                 new Name('name', 'surname')
             )
         ]);
@@ -156,10 +157,10 @@ class CreatePostActionTest extends TestCase
 
         $response->send();
     }
-
-    private function JsonBodyUuidIdentification($usersRepository): IdentificationInterface
+    
+    private function JsonBodyUuidIdentification($usersRepository): TokenAuthenticationInterface
     {
-        return new class ($usersRepository) implements IdentificationInterface {
+        return new class ($usersRepository) implements TokenAuthenticationInterface {
             
             public function __construct(
                 private UserRepositoryInterface $usersRepository

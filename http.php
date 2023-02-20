@@ -1,5 +1,7 @@
 <?php
 
+use Journal\Http\Actions\Auth\LogIn;
+use Journal\Http\Actions\Auth\LogOut;
 use Journal\Blog\Exceptions\HttpException;
 use Journal\Http\Actions\Comments\CreateComment;
 use Journal\Http\Actions\Like\CreateLike;
@@ -44,8 +46,10 @@ $routes = [
     'GET' => [
         '/users/show' => FindByUsername::class,
         '/posts/show' => FindByUuid::class,
+        '/logout' => LogOut::class
     ],
     'POST' => [
+        '/login' => LogIn::class,
         '/posts/create' => CreatePost::class,
         '/posts/comment' => CreateComment::class,
         '/posts/like' => CreateLike::class,
@@ -70,9 +74,8 @@ $actionClassName = $routes[$method][$path];
 try {
     $action = $container->get($actionClassName);
     $response = $action->handle($request);
-   
 } catch (Exception $e) {
     (new ErrorResponse($e->getMessage()))->send();
-}
+} 
 
 $response->send();

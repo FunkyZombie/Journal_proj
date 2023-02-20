@@ -14,6 +14,8 @@ use Journal\Blog\Repositories\UserRepository\UserRepositoryInterface;
 use Journal\Blog\User;
 use Journal\Blog\UUID;
 use Journal\Http\Actions\Comments\CreateComment;
+use Journal\Http\Auth\AuthenticationInterface;
+use Journal\Http\Auth\TokenAuthenticationInterface;
 use Journal\Http\ErrorResponse;
 use Journal\Http\Request;
 use Journal\Blog\Name;
@@ -116,6 +118,7 @@ class CreateCommentActionTest extends TestCase
         $user = new User(
             new UUID('146e3a28-04f4-4a46-b222-3e2b4103d0c7'),
             'username',
+            'qwerty123',
             new Name('name', 'surname')
         );
         
@@ -133,7 +136,12 @@ class CreateCommentActionTest extends TestCase
         
         $commentRepository = $this->commentRepository();
         
-        $action = new CreateComment($postRepository, $userRepository, $commentRepository);
+        $action = new CreateComment(
+            $postRepository, 
+            $userRepository, 
+            $this->JsonBodyUuidIdentification($userRepository),
+            $commentRepository
+        );
         
         $response = $action->handle($request);
         
@@ -165,6 +173,7 @@ class CreateCommentActionTest extends TestCase
         $user = new User(
             new UUID('146e3a28-04f4-4a46-b222-3e2b4103d0c7'),
             'username',
+            'qwerty123',
             new Name('name', 'surname')
         );
         
@@ -179,7 +188,12 @@ class CreateCommentActionTest extends TestCase
         $userRepository = $this->usersRepository([]);
         $commentRepository = $this->commentRepository();
         
-        $action = new CreateComment($postRepository, $userRepository, $commentRepository);
+        $action = new CreateComment(
+            $postRepository, 
+            $userRepository, 
+            $this->JsonBodyUuidIdentification($userRepository), 
+            $commentRepository
+        );
         
         $response = $action->handle($request);
         
@@ -197,6 +211,7 @@ class CreateCommentActionTest extends TestCase
         $user = new User(
             new UUID('146e3a28-04f4-4a46-b222-3e2b4103d0c7'),
             'username',
+            'qwerty123',
             new Name('name', 'surname')
         );
         
@@ -215,7 +230,12 @@ class CreateCommentActionTest extends TestCase
         
         $commentRepository = $this->commentRepository();
         
-        $action = new CreateComment($postRepository, $userRepository, $commentRepository);
+        $action = new CreateComment(
+            $postRepository, 
+            $userRepository, 
+            $this->JsonBodyUuidIdentification($userRepository), 
+            $commentRepository
+        );
         
         $response = $action->handle($request);
         
@@ -224,5 +244,26 @@ class CreateCommentActionTest extends TestCase
         $this->expectOutputString('{"success":false,"reason":"No such field: text"}');
         
         $response->send();
+    }
+    
+    private function JsonBodyUuidIdentification($usersRepository): TokenAuthenticationInterface
+    {
+        return new class ($usersRepository) implements TokenAuthenticationInterface {
+            
+            public function __construct(
+                private UserRepositoryInterface $usersRepository
+            )
+            { 
+            }
+            /**
+             * @param Request $request
+             * @return User
+             */
+            public function user(Request $request): User
+            {
+                $userUuid = new UUID($request->jsonBodyField('author'));
+                return $this->usersRepository->get($userUuid);
+            }
+        };
     }
 }

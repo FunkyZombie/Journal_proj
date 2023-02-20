@@ -13,13 +13,11 @@ use Journal\Http\ErrorResponse;
 use Journal\Http\Request;
 use Journal\Http\Response;
 use Journal\Http\SuccessfulResponse;
-use Psr\Log\LoggerInterface;
 
 class FindByUuid implements ActionInterface
 {
     public function __construct(
-        private PostRepositoryInterface $postRepository,
-        private LoggerInterface $logger
+        private PostRepositoryInterface $postRepository
     )
     {}
     public function handle(Request $request): Response
@@ -33,7 +31,6 @@ class FindByUuid implements ActionInterface
         try {
             $post = $this->postRepository->get(new UUID($postUuid));
         } catch (PostNotFoundException $e) {
-            $this->logger->warning($e->getMessage() . ': '. $postUuid);
             return new ErrorResponse($e->getMessage());
         }
         
