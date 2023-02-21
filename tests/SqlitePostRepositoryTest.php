@@ -46,46 +46,54 @@ class SqlitePostRepositoryTest extends TestCase
         $connectionStub->method('prepare')->willReturn($statementMock);
         $repository = new SqlitePostsRepository($connectionStub, new SqliteUsersRepository($connectionStub));
 
-        $repository->save(new Post(
+        $repository->save(
+            new Post(
                 new UUID('166d6f00-ecb5-4143-a57f-cd13f0e36fa4'),
-                new User(new UUID('123e4567-e89b-12d3-a456-426614174000'), 'Funky', new Name('Funky', 'Monk')),
+                new User(
+                    new UUID('123e4567-e89b-12d3-a456-426614174000'),
+                    'Funky',
+                    'qwerty123',
+                    new Name(
+                        'Funky',
+                        'Monk'
+                    )
+                ),
                 'Title',
                 'Text'
             )
         );
     }
 
-    public function testItGetByUuid(): void 
+    public function testItGetByUuid(): void
     {
         $connectionStub = $this->createStub(PDO::class);
         $statementMock = $this->createMock(PDOStatement::class);
-        
+
         $connectionUserStub = $this->createStub(PDO::class);
         $statementUserMock = $this->createMock(PDOStatement::class);
-        
+
         $statementUserMock->method('fetch')->willReturn([
             'uuid' => '5b1da8ae-9a21-45c2-9dcc-52189a966979',
             'username' => 'TestUser',
+            'password' => 'qwerty123',
             'first_name' => 'First',
             'last_name' => 'Last'
         ]);
-        
+
         $statementMock->method('fetch')->willReturn([
             'uuid' => '8e368fdb-c8b8-46f7-bb30-f2e59d3e1ff1',
             'author' => '5b1da8ae-9a21-45c2-9dcc-52189a966979',
             'title' => 'Title',
             'text' => 'Text'
         ]);
-        
+
         $connectionUserStub->method('prepare')->willReturn($statementUserMock);
         $connectionStub->method('prepare')->willReturn($statementMock);
 
         $postRepository = new SqlitePostsRepository($connectionStub, new SqliteUsersRepository($connectionUserStub));
         $post = $postRepository->get(new UUID('8e368fdb-c8b8-46f7-bb30-f2e59d3e1ff1'));
 
-        $this->assertSame('8e368fdb-c8b8-46f7-bb30-f2e59d3e1ff1', (string)$post->uuid());
+        $this->assertSame('8e368fdb-c8b8-46f7-bb30-f2e59d3e1ff1', (string) $post->uuid());
 
     }
-}       
-
-
+}

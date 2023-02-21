@@ -37,7 +37,7 @@ class CreateUserCommandTest extends TestCase
         $this->expectExceptionMessage('No such argument: first_name');
         $command->handler(new Arguments([
             'username' => 'Ivan',
-
+            'password' => 'qwerty',
             'last_name' => 'Nikitin',
         ]));
     }
@@ -50,7 +50,7 @@ class CreateUserCommandTest extends TestCase
         $this->expectExceptionMessage('No such argument: last_name');
         $command->handler(new Arguments([
             'username' => 'Ivan',
-
+            'password' => 'qwerty',
             'first_name' => 'Ivan',
         ]));
     }

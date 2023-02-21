@@ -24,6 +24,6 @@ class UUID
 
     public function __toString(): string
     {
-        return $this->uuidString;
+        return (string)$this->uuidString;
     }
 }

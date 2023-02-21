@@ -6,10 +6,10 @@ use Journal\Blog\Exceptions\UserNotFoundException;
 use Journal\Blog\Repositories\UserRepository\UserRepositoryInterface;
 use Journal\Blog\User;
 use Journal\Http\Auth\AuthException;
-use Journal\Http\Auth\IdentificationInterface;
+use Journal\Http\Auth\AuthenticationInterface;
 use Journal\Http\Request;
 
-class JsonBodyUsernameIdentification implements IdentificationInterface
+class JsonBodyUsernameIdentification implements AuthenticationInterface
 {
     public function __construct(
         private UserRepositoryInterface $usersRepository

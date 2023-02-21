@@ -10,11 +10,14 @@ use Journal\Blog\UUID;
 use Journal\Blog\Repositories\PostRepository\PostRepositoryInterface;
 use Journal\Blog\Repositories\UserRepository\UserRepositoryInterface;
 use Journal\Http\Actions\ActionInterface;
-use Journal\Http\Auth\IdentificationInterface;
+use Journal\Http\Auth\AuthenticationInterface;
+use Journal\Http\Auth\AuthException;
+use Journal\Http\Auth\TokenAuthenticationInterface;
 use Journal\Http\ErrorResponse;
 use Journal\Http\Request;
 use Journal\Http\Response;
 use Journal\Http\SuccessfulResponse;
+
 use Psr\Log\LoggerInterface;
 
 class CreatePost implements ActionInterface
@@ -22,7 +25,7 @@ class CreatePost implements ActionInterface
     public function __construct(
         private PostRepositoryInterface $postsRepository,
         private UserRepositoryInterface $usersRepository,
-        private IdentificationInterface $identification,
+        private TokenAuthenticationInterface $authentication,
         private LoggerInterface $logger,
     )
     {
@@ -30,8 +33,8 @@ class CreatePost implements ActionInterface
     public function handle(Request $request): Response
     {
         try {
-            $author = $this->identification->user($request);
-        } catch (UserNotFoundException $e) {
+            $author = $this->authentication->user($request);
+        } catch (UserNotFoundException|AuthException $e) {
             return new ErrorResponse($e->getMessage());
         }
 

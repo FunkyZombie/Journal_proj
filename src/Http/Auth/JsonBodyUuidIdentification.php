@@ -1,7 +1,7 @@
 <?php
 namespace Journal\Http\Auth;
 
-use Journal\Http\Auth\IdentificationInterface;
+use Journal\Http\Auth\AuthenticationInterface;
 use Journal\Blog\Exceptions\HttpException;
 use Journal\Blog\Exceptions\InvalidArgumentException;
 use Journal\Blog\Exceptions\UserNotFoundException;
@@ -11,7 +11,7 @@ use Journal\Blog\UUID;
 use Journal\Http\Auth\AuthException;
 use Journal\Http\Request;
 
-class JsonBodyUuidIdentification implements IdentificationInterface
+class JsonBodyUuidIdentification implements AuthenticationInterface
 {
     public function __construct(
         private UserRepositoryInterface $usersRepository

@@ -16,6 +16,7 @@ use Journal\Blog\Repositories\UserRepository\UserRepositoryInterface;
 
 use Journal\Http\Actions\ActionInterface;
 
+use Journal\Http\Auth\TokenAuthenticationInterface;
 use Journal\Http\ErrorResponse;
 use Journal\Http\Request;
 use Journal\Http\Response;
@@ -26,6 +27,7 @@ class CreateComment implements ActionInterface
     public function __construct(
         private PostRepositoryInterface $postsRepository,
         private UserRepositoryInterface $usersRepository,
+        private TokenAuthenticationInterface $authentication,
         private CommentRepositoryInterface $commentsRepository
     )
     {
