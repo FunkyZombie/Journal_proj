@@ -21,7 +21,8 @@
         "cviebrock/eloquent-sluggable": "^9.0",
         "psr/container": "^2.0",
         "vlucas/phpdotenv": "^5.5",
-        "monolog/monolog": "^3.3"
+        "monolog/monolog": "^3.3",
+        "symfony/console": "^6.2"
     },
     "require-dev": {
         "fakerphp/faker": "^1.21",

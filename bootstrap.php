@@ -1,5 +1,6 @@
 <?php
 
+use Dotenv\Dotenv;
 use Journal\Blog\Commands\CreateUserCommand;
 use Journal\Blog\Container\DIContainer;
 use Journal\Blog\Repositories\AuthTokenRepository\AuthTokensRepositoryInterface;
@@ -27,9 +28,14 @@ use Monolog\Logger;
 
 use Psr\Log\LoggerInterface;
 
+use Faker\Provider\Lorem;
+use Faker\Provider\ru_RU\Internet;
+use Faker\Provider\ru_RU\Person;
+use Faker\Provider\ru_RU\Text;
+
 require_once __DIR__ . '/vendor/autoload.php';
 
-\Dotenv\Dotenv::createImmutable(__DIR__)->safeLoad();
+Dotenv::createImmutable(__DIR__)->safeLoad();
 
 $container = new DIContainer();
 
@@ -110,6 +116,17 @@ $container->bind(
 $container->bind(
     IdentificationInterface::class,
     JsonBodyUuidIdentification::class
+);
+
+$faker = new \Faker\Generator();
+$faker->addProvider(new Person($faker));
+$faker->addProvider(new Text($faker));
+$faker->addProvider(new Internet($faker));
+$faker->addProvider(new Lorem($faker));
+
+$container->bind(
+        \Faker\Generator::class,
+    $faker
 );
 
 return $container;

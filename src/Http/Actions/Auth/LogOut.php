@@ -6,7 +6,6 @@ use Journal\Blog\Repositories\AuthTokenRepository\AuthTokensRepositoryInterface;
 use Journal\Http\Actions\ActionInterface;
 use Journal\Http\Auth\AuthException;
 use Journal\Blog\Exceptions\AuthException\AuthTokenNotFoundException;
-use Journal\Http\Auth\PasswordAuthenticationInterface;
 use Journal\Http\Request;
 use Journal\Http\Response;
 use Journal\Http\SuccessfulResponse;

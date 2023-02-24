@@ -1,7 +1,0 @@
-POST  http://localhost:8000/posts/create
-Authorization: Bearer 13db02a299230dc235d1713acce5d83549f450aa3f534f69271f30c467c478dfc9ee5284ef4989e5
-
-{
-    "title": "Title",
-    "text": "Text"
-}

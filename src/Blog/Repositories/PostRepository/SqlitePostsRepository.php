@@ -3,9 +3,11 @@
 namespace Journal\Blog\Repositories\PostRepository;
 
 use Journal\Blog\{Post, UUID};
+use Journal\Blog\Exceptions\PostException\PostRepositoryException;
 use Journal\Blog\Exceptions\PostNotFoundException;
 use Journal\Blog\Repositories\UserRepository\SqliteUsersRepository;
 use PDO;
+use PDOException;
 use PDOStatement;
 
 class SqlitePostsRepository implements PostRepositoryInterface
@@ -13,7 +15,8 @@ class SqlitePostsRepository implements PostRepositoryInterface
     public function __construct(
         private PDO $connection,
         private SqliteUsersRepository $userRepository
-    ) {}
+    ) {
+    }
     public function save(Post $post): void
     {
         $statement = $this->connection->prepare(
@@ -22,9 +25,9 @@ class SqlitePostsRepository implements PostRepositoryInterface
         );
 
         $statement->execute([
-            ':uuid' => (string)$post->uuid(),
-            ':author' => (string)$post->author()->uuid(),
-            ':title' => (string)$post->title(),
+            ':uuid' => (string) $post->uuid(),
+            ':author' => (string) $post->author()->uuid(),
+            ':title' => (string) $post->title(),
             ':text' => $post->text()
         ]);
     }
@@ -33,7 +36,7 @@ class SqlitePostsRepository implements PostRepositoryInterface
         $statement = $this->connection->prepare(
             'SELECT * FROM posts WHERE uuid = :uuid'
         );
-        
+
         $statement->execute([
             ':uuid' => $uuid
         ]);
@@ -44,7 +47,7 @@ class SqlitePostsRepository implements PostRepositoryInterface
     private function getPost(PDOStatement $statement): Post
     {
         $result = $statement->fetch(PDO::FETCH_ASSOC);
-    
+
         if ($result === false) {
             throw new PostNotFoundException('Post not found');
         }
@@ -58,15 +61,21 @@ class SqlitePostsRepository implements PostRepositoryInterface
             $result['text']
         );
     }
-    
-    public function delete(UUID $uuid):void
+
+    public function delete(UUID $uuid): void
     {
-        $statement = $this->connection->prepare(
-            'DELETE FROM posts WHERE posts.uuid=:uuid;'
-        );
-        
-        $statement->execute([
-            ':uuid' => $uuid,
-        ]);
+        try {
+            $statement = $this->connection->prepare(
+                'DELETE FROM posts WHERE uuid=:uuid;'
+            );
+
+            $statement->execute([
+                ':uuid' => $uuid,
+            ]);
+        } catch (PDOException $e) {
+            throw new PostRepositoryException(
+                $e->getMessage(), (int)$e->getCode(), $e
+            );
+        }
     }
 }
