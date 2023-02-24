@@ -1,20 +1,28 @@
 <?php
 
-use Journal\Blog\Commands\Arguments;
-use Journal\Blog\Commands\CreateUserCommand;
-use Journal\Blog\Exceptions\AppException;
-use Psr\Log\LoggerInterface;
+
+use Journal\Blog\Commands\Users\CreateUser;
+use Journal\Blog\Commands\Posts\DeletePost;
+use Journal\Blog\Commands\Users\UpdateUser;
+use Journal\Blog\Commands\FakeData\PopulateDB;
+use Symfony\Component\Console\Application;
+
 
 require_once __DIR__ . '/vendor/autoload.php';
-
 $container = require __DIR__ . '/bootstrap.php';
-// При помощи контейнера создаём команду
 
-$logger = $container->get(LoggerInterface::class);
-$command = $container->get(CreateUserCommand::class);
+$application = new Application();
 
-try {
-    $command->handler(Arguments::fromArgv($argv));
-} catch (Exception $e) {
-    $logger->ERROR($e->getMessage(), ['exception' => $e]);
+$commandsClasses = [
+    CreateUser::class,
+    DeletePost::class,
+    UpdateUser::class,
+    PopulateDB::class,
+];
+
+foreach ($commandsClasses as $commandClass) {
+    $command = $container->get($commandClass);
+    $application->add($command);
 }
+
+$application->run();

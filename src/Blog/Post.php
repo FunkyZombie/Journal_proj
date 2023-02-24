@@ -14,9 +14,9 @@ class Post {
     {
         return (string) $this->uuid;
     }
-    public function uuid(): string
+    public function uuid(): UUID
     {
-        return (string) $this->uuid;
+        return $this->uuid;
     }
     public function author():User
     {
