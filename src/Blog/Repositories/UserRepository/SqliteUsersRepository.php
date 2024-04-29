@@ -1,6 +1,7 @@
 <?php
 
 namespace Journal\Blog\Repositories\UserRepository;
+
 use Journal\Blog\Exceptions\UserNotFoundException;
 
 use Journal\Blog\User;
@@ -13,18 +14,33 @@ class SqliteUsersRepository implements UserRepositoryInterface
 {
     public function __construct(
         private PDO $connection
-    ) {
+    )
+    {
     }
 
-    public function save(User $user):void
+    public function save(User $user): void
     {
         $statement = $this->connection->prepare(
-            'INSERT INTO users (uuid, username, password,  first_name, last_name)
-            VALUES (:uuid, :username, :password, :first_name, :last_name)'
+            'INSERT INTO users (
+                uuid, 
+                username, 
+                password,  
+                first_name, 
+                last_name
+            )
+            VALUES (
+                :uuid, 
+                :username, 
+                :password, 
+                :first_name, 
+                :last_name
+            ) ON CONFLICT (uuid) DO UPDATE SET
+                first_name = :first_name,
+                last_name = :last_name'
         );
 
         $statement->execute([
-            ':uuid' => (string)$user->uuid(),
+            ':uuid' => (string) $user->uuid(),
             ':username' => $user->username(),
             ':password' => $user->hashedPassword(),
             ':first_name' => $user->name()->firstName(),
@@ -73,7 +89,7 @@ class SqliteUsersRepository implements UserRepositoryInterface
             $result['username'],
             $result['password'],
             new Name(
-                $result['first_name'], 
+                $result['first_name'],
                 $result['last_name']
             )
         );
